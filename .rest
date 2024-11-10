@@ -1,0 +1,21 @@
+GET http://localhost:8080/ HTTP/1.1
+
+###
+
+GET http://localhost:8080/contacts HTTP/1.1
+
+###
+
+GET http://localhost:8080/contacts/673017ffd6e0fe9b8322b1be HTTP/1.1
+
+###
+
+GET https://cse341-0mfe.onrender.com/ HTTP/1.1
+
+###
+
+GET https://cse341-0mfe.onrender.com/contacts HTTP/1.1
+
+###
+
+GET https://cse341-0mfe.onrender.com/contacts/673017ffd6e0fe9b8322b1be HTTP/1.1
