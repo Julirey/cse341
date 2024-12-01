@@ -4,24 +4,45 @@ const ObjectId = require("mongodb").ObjectId;
 const getContacts = async (req, res, next) => {
   //#swagger.tags=["Contacts"]
 
-  const result = await mongodb.getDb().db("test").collection("contacts").find();
+  try {
+    const result = await mongodb
+      .getDb()
+      .db("test")
+      .collection("contacts")
+      .find();
 
-  result.toArray().then((lists) => {
-    res.setHeader("Content-Type", "application/json");
-    res.status(200).json(lists);
-  });
+    result.toArray().then((lists) => {
+      res.setHeader("Content-Type", "application/json");
+      res.status(200).json(lists);
+    });
+  } catch (error) {
+    console.error("Error fetching contacts:", err);
+    res.status(400).json({ message: err.message });
+  }
 };
 
 const getContactsById = async (req, res, next) => {
   //#swagger.tags=["Contacts"]
 
-  const contactId = ObjectId.createFromHexString(req.params.id);
-  const result = await mongodb.getDb().db("test").collection("contacts").find({ _id: contactId });
+  if (!ObjectId.isValid(req.params.id)) {
+    res.status(400).json("Must use a valid contact id to find a contact.");
+  }
+  try {
+    const contactId = ObjectId.createFromHexString(req.params.id);
+    const result = await mongodb
+      .getDb()
+      .db("test")
+      .collection("contacts")
+      .find({ _id: contactId });
 
-  result.toArray().then((lists) => {
-    res.setHeader("Content-Type", "application/json");
-    res.status(200).json(lists[0]);
-  });
+    result.toArray().then((lists) => {
+      res.setHeader("Content-Type", "application/json");
+      res.status(200).json(lists[0]);
+    });
+  } catch (error) {
+    console.error("Error fetching contact by id:", err);
+    res.status(400).json({ message: err.message });
+  }
 };
 
 const createContact = async (req, res) => {
@@ -77,6 +98,9 @@ const updateContact = async (req, res) => {
 const deleteContact = async (req, res) => {
   //#swagger.tags=["Contacts"]
 
+  if (!ObjectId.isValid(req.params.id)) {
+    res.status(400).json("Must use a valid contact id to find a contact.");
+  }
   const contactId = ObjectId.createFromHexString(req.params.id);
   const response = await mongodb
     .getDb()

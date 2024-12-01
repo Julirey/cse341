@@ -9,6 +9,7 @@ const MongoClient = require("mongodb").MongoClient;
 const mongodb = require("./database/connect");
 const indexRoute = require("./routes");
 const contactsRoute = require("./routes/contactsRoute")
+const utilities = require("./middleware/")
 
 /* ***********************
  * Middleware
@@ -35,6 +36,34 @@ app.use ("/", indexRoute);
 
 // Route to get contacts info
 app.use("/contacts", contactsRoute);
+
+// File Not Found Route - must be last route in list
+app.use(async (req, res, next) => {
+  next({ status: 404, message: "Sorry, we appear to have lost that page." });
+});
+
+
+/* ***********************
+ * Express Error Handler
+ * Place after all other middleware
+ *************************/
+app.use(async (err, req, res, next) => {
+  console.error(`Error at: "${req.originalUrl}": ${err.message}`);
+});
+
+/* ***********************
+ * Node.js Error Handler
+ * Place after all other middleware
+ *************************/
+process.on("uncaughtException", (error, origin) => {
+  console.error(
+    process.stderr.fd,
+    `Caught exception: ${err}\n` + `Exception origin: ${origin}`
+  );
+  if (!utilities.isOperationalError(error)) {
+    process.exit(1);
+  }
+});
 
 /* ***********************
  * Local Server Information
