@@ -33,12 +33,15 @@ const getContactsById = async (req, res, next) => {
       .getDb()
       .db("test")
       .collection("contacts")
-      .find({ _id: contactId });
+      .find({ _id: contactId })
+      .toArray();
 
-    result.toArray().then((lists) => {
+      if(!result[0]) {
+        return res.status(404).json("Contact not found.");
+      }
+      
       res.setHeader("Content-Type", "application/json");
-      res.status(200).json(lists[0]);
-    });
+      res.status(200).json(result[0]);
   } catch (error) {
     console.error("Error fetching contact by id:", err);
     res.status(400).json({ message: err.message });
@@ -73,6 +76,9 @@ const createContact = async (req, res) => {
 const updateContact = async (req, res) => {
   //#swagger.tags=["Contacts"]
 
+  if (!ObjectId.isValid(req.params.id)) {
+    res.status(400).json("Must use a valid contact id");
+  }
   const contactId = ObjectId.createFromHexString(req.params.id);
   const contact = {
     firstName: req.body.firstName,
