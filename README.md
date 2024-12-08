@@ -10,5 +10,4 @@ Each branch contains a collection of code for a given assignment or class activi
 
 This project will provide an API for storing and retrieving information about musical pieces. These musical pieces are stored in a MongoDB database and all interaction will happen through the API.
 
-Live version link: https://cse341-0mfe.onrender.com/
-<!-- FIXME -->
+Live version link: https://cse341-project2-music.onrender.com
