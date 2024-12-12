@@ -8,32 +8,69 @@ const bodyParser = require("body-parser");
 const MongoClient = require("mongodb").MongoClient;
 const mongodb = require("./database/connect");
 const indexRoute = require("./routes");
-const musicRoute = require("./routes/musicRoute")
+const musicRoute = require("./routes/musicRoute");
 const usersRoute = require("./routes/usersRoute");
-const utilities = require("./middleware/")
+const utilities = require("./middleware/");
+const passport = require("passport");
+const session = require("express-session");
+const GitHubStrategy = require("passport-github2").Strategy;
+const cors = require("cors");
 
 /* ***********************
  * Middleware
  * ************************/
 app.use(bodyParser.json());
 
-app.use((req, res, next) => {
-  res.setHeader("Access-Control-Allow-Origin", "*");
-  res.setHeader(
-    "Access-Control-Allow-Headers",
-    "Origin, X-Requeted-With, Content-Type, Accept, Z-Key"
-  );
-  res.setHeader(
-    "Access-Control-Allow-Methods",
-    "GET, POST, PUT, DELETE, OPTIONS"
-  );
-  next();
+app
+  .use(
+    session({
+      secret: process.env.SESSION_SECRET,
+      resave: false,
+      saveUninitialized: true,
+    })
+  )
+  .use(passport.initialize())
+  .use(passport.session())
+  .use((req, res, next) => {
+    res.setHeader("Access-Control-Allow-Origin", "*");
+    res.setHeader(
+      "Access-Control-Allow-Headers",
+      "Origin, X-Requeted-With, Content-Type, Accept, Z-Key"
+    );
+    res.setHeader(
+      "Access-Control-Allow-Methods",
+      "GET, POST, PUT, DELETE, OPTIONS"
+    );
+    next();
+  })
+  .use(cors({ methods: ["GET", "POST", "DELETE", "UPDATE", "PUT", "PATCH"] }))
+  .use(cors({ rigin: "*" }));
+
+passport.use(
+  new GitHubStrategy(
+    {
+      clientID: process.env.GITHUB_CLIENT_ID,
+      clientSecret: process.env.GITHUB_CLIENT_SECRET,
+      callbackURL: process.env.CALLBACK_URL,
+    },
+    function (accessToken, refreshToken, profile, done) {
+      return done(null, profile);
+    }
+  )
+);
+
+passport.serializeUser((user, done) => {
+  done(null, user);
+});
+
+passport.deserializeUser((user, done) => {
+  done(null, user);
 });
 
 /* ***********************
  * Routes
  *************************/
-app.use ("/", indexRoute);
+app.use("/", indexRoute);
 
 // Route to get music info
 app.use("/music", musicRoute);
@@ -45,7 +82,6 @@ app.use("/users", usersRoute);
 app.use(async (req, res, next) => {
   next({ status: 404, message: "Sorry, we appear to have lost that page." });
 });
-
 
 /* ***********************
  * Express Error Handler
@@ -83,7 +119,7 @@ mongodb.initDb((err, mongodb) => {
   if (err) {
     console.log(err);
   } else {
-    app.listen(port, ()  => {
+    app.listen(port, () => {
       console.log(`Connected to DB and listening on http://${host}:${port}`);
     });
   }
